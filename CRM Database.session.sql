@@ -215,12 +215,11 @@ INSERT INTO support_periods (program_id, employee_id, client_id, start_date, end
 --     (2, 5, 5, '2025-10-10', 1800.00, 'Credit Card');
 
 
-
-
 -- ============================================
--- Queries
+-- Simple Queries
 -- ============================================
 
+-- Using the created_at timestamps for filtering and sorting
 -- Get all clients created today
 --      SELECT *
 --      FROM clients
@@ -231,7 +230,7 @@ INSERT INTO support_periods (program_id, employee_id, client_id, start_date, end
 --      FROM employees
 --      ORDER BY created_at DESC;
 
-
+-- Using the updated_at timestamps for filtering and sorting
 -- Get all financial records updated in the last 7 days
 --      SELECT *
 --      FROM financials
@@ -241,3 +240,8 @@ INSERT INTO support_periods (program_id, employee_id, client_id, start_date, end
 --      SELECT *
 --      FROM accounts
 --      ORDER BY updated_at DESC;
+
+
+-- ============================================
+-- Complex Queries
+-- ============================================
