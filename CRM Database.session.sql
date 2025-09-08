@@ -191,57 +191,215 @@ INSERT INTO support_periods (program_id, employee_id, client_id, start_date, end
     (1, 5, 5, '2025-05-05', '2025-09-05');
 
 -- Insert sample data into Financials table
--- INSERT INTO financials (client_id, support_period_id, amount_due, invoice_number, invoice_due_date) VALUES
-    -- (1, 1, 1500.00, 'INV1001', '2025-07-01'),
-    -- (2, 2, 2000.00, 'INV1002', '2025-09-01'),
-    -- (3, 3, 1750.00, 'INV1003', '2025-10-01'),
-    -- (4, 4, 2200.00, 'INV1004', '2025-10-20'),
-    -- (5, 5, 1800.00, 'INV1005', '2025-10-05');
+INSERT INTO financials (client_id, support_period_id, amount_due, invoice_number, invoice_due_date) VALUES
+    (1, 1, 1500.00, 'INV1001', '2025-07-01'),
+    (2, 2, 2000.00, 'INV1002', '2025-09-01'),
+    (3, 3, 1750.00, 'INV1003', '2025-10-01'),
+    (4, 4, 2200.00, 'INV1004', '2025-10-20'),
+    (5, 5, 1800.00, 'INV1005', '2025-10-05');
 
 -- Insert sample data into Reconciliations table
--- INSERT INTO reconciliations (employee_id, account_id, start_date, end_date, bank_balance) VALUES
---     (2, 1, '2025-06-01', '2025-06-30', 5000.00),
---     (3, 2, '2025-06-01', '2025-06-30', 7500.00),
---     (2, 3, '2025-06-01', '2025-06-30', 6200.00),
---     (3, 4, '2025-06-01', '2025-06-30', 8100.00),
---     (2, 5, '2025-06-01', '2025-06-30', 4300.00);
+INSERT INTO reconciliations (employee_id, account_id, start_date, end_date, bank_balance) VALUES
+    (2, 1, '2025-06-01', '2025-06-30', 5000.00),
+    (3, 2, '2025-06-01', '2025-06-30', 7500.00),
+    (2, 3, '2025-06-01', '2025-06-30', 6200.00),
+    (3, 4, '2025-06-01', '2025-06-30', 8100.00),
+    (2, 5, '2025-06-01', '2025-06-30', 4300.00);
 
 -- Insert sample data into Payments table
--- INSERT INTO payments (employee_id, financial_id, account_id, payment_date, amount_paid, payment_method) VALUES
---     (2, 1, 1, '2025-07-05', 1500.00, 'Direct Deposit'),
---     (3, 2, 2, '2025-09-05', 2000.00, 'Credit Card'),
---     (2, 3, 3, '2025-10-05', 1750.00, 'Direct Deposit'),
---     (3, 4, 4, '2025-10-25', 2200.00, 'Bank Transfer'),
---     (2, 5, 5, '2025-10-10', 1800.00, 'Credit Card');
+INSERT INTO payments (employee_id, financial_id, account_id, payment_date, amount_paid, payment_method) VALUES
+    (2, 1, 1, '2025-07-05', 1500.00, 'Direct Deposit'),
+    (3, 2, 2, '2025-09-05', 2000.00, 'Credit Card'),
+    (2, 3, 3, '2025-10-05', 1750.00, 'Direct Deposit'),
+    (3, 4, 4, '2025-10-25', 2200.00, 'Bank Transfer'),
+    (2, 5, 5, '2025-10-10', 1800.00, 'Credit Card');
+
+-- NOTE: TO create tables with multiple IDs, run the following simple query to find the IDs created in other tables:
+--      SELECT * FROM table_name;
 
 
 -- ============================================
 -- Simple Queries
 -- ============================================
 
--- Using the created_at timestamps for filtering and sorting
--- Get all clients created today
---      SELECT *
---      FROM clients
---      WHERE created_at::date = CURRENT_DATE;
+-- Run the first two queries below before the created_at / updated_at queries - so that the entries are not all created on the same date:
+--------------------------------------------------------------------------------------------------------------------------------------------
+-- 1a. Update the created_at timestamp record
+    UPDATE employees
+    SET created_at = '2025-08-09'
+    WHERE employee_id = 1;
 
--- List all employees, newest first
---      SELECT *
---      FROM employees
---      ORDER BY created_at DESC;
+-- 1b. Update the updated_at timestamp record
+    UPDATE accounts
+    SET updated_at = '2025-08-09'
+    WHERE account_id = 1;
 
--- Using the updated_at timestamps for filtering and sorting
--- Get all financial records updated in the last 7 days
---      SELECT *
---      FROM financials
---      WHERE updated_at >= NOW() - INTERVAL '7 days';
+-- Run the next two queries to use the created_at timestamps for filtering and sorting:
+------------------------------------------------------------------------------------------
+-- 2a. Find all clients created today
+    SELECT *
+    FROM clients
+    WHERE created_at::date = CURRENT_DATE;
 
--- Show all accounts, most recently updated first
---      SELECT *
---      FROM accounts
---      ORDER BY updated_at DESC;
+-- 2b. List all employees, newest first
+    SELECT *
+    FROM employees
+    ORDER BY created_at DESC;
+
+-- Run the next two queries to use the updated_at timestamps for filtering and sorting:
+------------------------------------------------------------------------------------------
+-- 3a. Find all financial records updated in the last 7 days
+    SELECT *
+    FROM financials
+    WHERE updated_at >= NOW() - INTERVAL '7 days';
+
+-- 3b. Show all accounts, most recently updated first
+    SELECT *
+    FROM accounts
+    ORDER BY updated_at DESC;
+
+-- Run the next three queries to find a single record:
+---------------------------------------------------------
+-- 4a. Query the reconciliations table for Reconcilaition_ID = 1
+    SELECT *
+    FROM reconciliations
+    WHERE reconciliation_id = 1;
+
+-- 4b. Run a subquery to find the employee name who made a payment on 2025-10-05
+    SELECT employee_name
+    FROM EMPLOYEES
+    WHERE employee_id IN (
+        SELECT employee_id 
+        FROM PAYMENTS 
+        WHERE payment_date::date = '2025-10-05'
+    );   
+
+-- 4c. Run a join to find the employee name who made a payment on 2025-10-05
+    SELECT e.employee_name
+    FROM employees e
+    JOIN payments p ON e.employee_id = p.employee_id
+    WHERE p.payment_date::date = '2025-10-05';
+
+-- Run the next two queries to insert records:
+--------------------------------------------------
+-- 5a. Insert a record into the client table
+    INSERT INTO clients (client_name, client_dob, client_address, client_phone_number) 
+    VALUES ('Angela Clegg', '1988-12-25', '789 New St, Hobart, TAS', '0478123456');
+
+-- 5b. Insert a record with appropriate foreign-key data to the financials table
+-- (Referencing client Holly Rupert)
+    INSERT INTO financials (client_id, support_period_id, amount_due, invoice_number, invoice_due_date) 
+    VALUES (5, 5, 1600.00, 'INV1006', '2025-11-01');
+
+-- Run the next query to delete a record:
+---------------------------------------------
+-- 6a. Delete the record with Payment_ID = 2
+    DELETE FROM payments
+    WHERE payment_id = 2;
 
 
 -- ============================================
 -- Complex Queries
 -- ============================================
+
+-- Run the below aggregate function examples (Count, Sum, Average, Minimum, Maximum):
+------------------------------------------------
+-- a. Count the number of clients
+    SELECT COUNT(*) AS total_clients
+    FROM clients;
+
+-- b. Calculate the total amount due from all financial records
+    SELECT SUM(amount_due) AS total_amount_due
+    FROM financials;
+
+-- c. Calculate the average bank balance from all reconciliations
+    SELECT AVG(bank_balance) AS average_bank_balance
+    FROM reconciliations;
+
+-- d. Find the minimum amount paid in the payments table
+    SELECT MIN(amount_paid) AS minimum_payment
+    FROM payments;
+
+-- e. Find the maximum amount due in the financials table
+    SELECT MAX(amount_due) AS maximum_amount_due
+    FROM financials;
+
+-- Run the below group by examples:
+------------------------------------------------
+
+
+
+-- Three group, sort, filter, 
+-- ○ order data by a specific value
+-- ○ calculate data based on values from tables
+-- ○ filtering data based on a specific value
+
+
+
+-- Run the below subquery and join examples:
+----------------------------------------------------------------------------------------------
+-- a. Find employees who have made payments using 'Bank Transfer'
+    SELECT employee_id, employee_name, employee_department
+    FROM employees e
+    WHERE EXISTS (
+        FROM payments p
+        WHERE e.employee_id = p.employee_id AND p.payment_method = 'Bank Transfer'
+    );
+
+-- Inner Join example
+-- b. Selects only the records that match in both tables
+SELECT clients.client_id,
+support_periods.client_id,
+clients.client_name,
+support_periods.start_date,
+support_periods.end_date
+FROM clients
+INNER JOIN support_periods ON 
+clients.client_id = support_periods.client_id
+WHERE support_periods.start_date >= '2025-01-09'
+ORDER BY support_periods.start_date;
+
+-- Outer Join example
+-- c. Selects all records from both tables, with NULLs where there are no matches
+
+SELECT 
+    e.employee_id,
+    e.employee_name,
+    e.employee_email,
+    p.payment_id,
+    p.amount_paid,
+    p.payment_date,
+    p.payment_method
+FROM employees e
+FULL OUTER JOIN payments p
+    ON e.employee_id = p.employee_id
+ORDER BY e.employee_id, p.payment_date;
+
+-- Left Join example
+-- d. All of the records from the left table, and the matched records from the right table
+
+SELECT c.client_id,
+       c.client_name,
+       sp.support_period_id,
+       sp.start_date,
+       sp.end_date,
+       e.employee_name,
+       p.program_name
+FROM clients c
+LEFT JOIN support_periods sp ON c.client_id = sp.client_id
+LEFT JOIN employees e ON sp.employee_id = e.employee_id
+LEFT JOIN programs p ON sp.program_id = p.program_id;
+
+-- Right Join example
+-- e. All of the records from the right table, and the matched records from the left table
+
+SELECT sp.support_period_id,
+       sp.start_date,
+       sp.end_date,
+       c.client_name,
+       e.employee_name,
+       p.program_name
+FROM support_periods sp
+RIGHT JOIN clients c ON sp.client_id = c.client_id
+LEFT JOIN employees e ON sp.employee_id = e.employee_id
+LEFT JOIN programs p ON sp.program_id = p.program_id;
