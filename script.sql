@@ -342,7 +342,7 @@ INSERT INTO payments (employee_id, financial_id, account_id, payment_date, amoun
     GROUP BY pr.program_id, pr.program_name
     ORDER BY brokerage_expended DESC, program_id ASC;
 
--- 8b. Provide data for reporting on the top 5 accounts by total amount paid, earliest payment date (excluding NUL values)
+-- 8b. Provide data for reporting on the top 5 accounts by total amount paid, earliest payment date (excluding NULL values)
     SELECT 
         a.account_id,
         a.account_name,
