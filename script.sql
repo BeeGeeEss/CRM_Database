@@ -222,7 +222,8 @@ INSERT INTO payments (employee_id, financial_id, account_id, payment_date, amoun
 -- Simple Queries
 -- ============================================
 
--- Run the first two queries below before the created_at / updated_at queries - so that the entries are not all created on the same date:
+-- Run the first two queries below before the created_at / updated_at queries 
+-- Ensures that the entries are not all created on the same date:
 --------------------------------------------------------------------------------------------------------------------------------------------
 -- 1a. Update the created_at timestamp record
     UPDATE employees
@@ -302,7 +303,7 @@ INSERT INTO payments (employee_id, financial_id, account_id, payment_date, amoun
 -- Complex Queries
 -- ============================================
 
--- Run the below aggregate function examples (Count, Sum, Average, Minimum, Maximum):
+-- Run the below five aggregate function examples (Count, Sum, Average, Minimum, Maximum):
 ------------------------------------------------
 -- 7a. Count the number of clients
     SELECT COUNT(*) AS total_clients
@@ -358,12 +359,30 @@ INSERT INTO payments (employee_id, financial_id, account_id, payment_date, amoun
     ORDER BY total_amount DESC, payment_date ASC
     LIMIT 5;
 
--- Run the below subquery and join examples:
+-- 8c. Provide data for reporting on the employee with the highest total payments made in the last 10 days
+    SELECT 
+        e.employee_id,
+        e.employee_name,
+        e.employee_department,
+        COUNT(p.payment_id) AS total_payments,
+        SUM(p.amount_paid) AS total_amount,
+        MAX(p.payment_date) AS last_payment_date
+    FROM employees e
+    JOIN payments p 
+        ON e.employee_id = p.employee_id
+    WHERE p.payment_date >= CURRENT_DATE - INTERVAL '10 days'
+    GROUP BY e.employee_id, e.employee_name, e.employee_department
+    HAVING SUM(p.amount_paid) > 0
+    ORDER BY total_amount DESC, last_payment_date DESC
+    LIMIT 1;
+
+-- Run the below five subquery and join examples:
 ----------------------------------------------------------------------------------------------
 -- 9a. Find employees who have made payments using 'Bank Transfer'
     SELECT employee_id, employee_name, employee_department
     FROM employees e
     WHERE EXISTS (
+        SELECT 1
         FROM payments p
         WHERE e.employee_id = p.employee_id AND p.payment_method = 'Bank Transfer'
     );
