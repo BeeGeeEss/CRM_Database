@@ -274,7 +274,7 @@ INSERT INTO payments (employee_id, financial_id, account_id, payment_date, amoun
         WHERE payment_date::date = '2025-10-05'
     );   
 
--- 4c. Run a join to find the employee name who made a payment on 2025-10-05
+-- 4c. Run a join query to find the employee name who made a payment on 2025-10-05
     SELECT e.employee_name
     FROM employees e
     JOIN payments p ON e.employee_id = p.employee_id
@@ -304,41 +304,63 @@ INSERT INTO payments (employee_id, financial_id, account_id, payment_date, amoun
 
 -- Run the below aggregate function examples (Count, Sum, Average, Minimum, Maximum):
 ------------------------------------------------
--- a. Count the number of clients
+-- 7a. Count the number of clients
     SELECT COUNT(*) AS total_clients
     FROM clients;
 
--- b. Calculate the total amount due from all financial records
+-- 7b. Calculate the total amount due from all financial records
     SELECT SUM(amount_due) AS total_amount_due
     FROM financials;
 
--- c. Calculate the average bank balance from all reconciliations
+-- 7c. Calculate the average bank balance from all reconciliations
     SELECT AVG(bank_balance) AS average_bank_balance
     FROM reconciliations;
 
--- d. Find the minimum amount paid in the payments table
+-- 7d. Find the minimum amount paid in the payments table
     SELECT MIN(amount_paid) AS minimum_payment
     FROM payments;
 
--- e. Find the maximum amount due in the financials table
+-- 7e. Find the maximum amount due in the financials table
     SELECT MAX(amount_due) AS maximum_amount_due
     FROM financials;
 
--- Run the below group by examples:
-------------------------------------------------
+-- Run the below ORDER BY, GROUP, SORT, FILTER function examples:
+--------------------------------------------------------------------
+-- 8a. Provide data for reporting on a program's client numbers and brokerage expended
+    SELECT 
+        pr.program_id as program_id,
+        pr.program_name as program_name,
+        COUNT(DISTINCT sp.client_id) AS new_clients,
+        COUNT(DISTINCT sp.employee_id) AS support_workers,
+        COALESCE(SUM(p.amount_paid), 0) AS brokerage_expended
+    FROM programs pr
+    LEFT JOIN support_periods sp 
+        ON pr.program_id = sp.program_id
+    LEFT JOIN payments p 
+        ON sp.support_period_id = p.financial_id
+    GROUP BY pr.program_id, pr.program_name
+    ORDER BY brokerage_expended DESC, program_id ASC;
 
-
-
--- Three group, sort, filter, 
--- ○ order data by a specific value
--- ○ calculate data based on values from tables
--- ○ filtering data based on a specific value
-
-
+-- 8b. Provide data for reporting on the top 5 accounts by total amount paid, earliest payment date (excluding NUL values)
+    SELECT 
+        a.account_id,
+        a.account_name,
+        a.bank_name,
+        COUNT(p.payment_id) AS total_payments,
+        SUM(p.amount_paid) AS total_amount,
+        MIN(p.payment_date) AS payment_date
+    FROM accounts a
+    LEFT JOIN payments p 
+        ON a.account_id = p.account_id
+    WHERE p.payment_date IS NOT NULL
+    GROUP BY a.account_id, a.account_name, a.bank_name
+    HAVING SUM(p.amount_paid) > 0
+    ORDER BY total_amount DESC, payment_date ASC
+    LIMIT 5;
 
 -- Run the below subquery and join examples:
 ----------------------------------------------------------------------------------------------
--- a. Find employees who have made payments using 'Bank Transfer'
+-- 9a. Find employees who have made payments using 'Bank Transfer'
     SELECT employee_id, employee_name, employee_department
     FROM employees e
     WHERE EXISTS (
@@ -347,59 +369,59 @@ INSERT INTO payments (employee_id, financial_id, account_id, payment_date, amoun
     );
 
 -- Inner Join example
--- b. Selects only the records that match in both tables
-SELECT clients.client_id,
-support_periods.client_id,
-clients.client_name,
-support_periods.start_date,
-support_periods.end_date
-FROM clients
-INNER JOIN support_periods ON 
-clients.client_id = support_periods.client_id
-WHERE support_periods.start_date >= '2025-01-09'
-ORDER BY support_periods.start_date;
+-- 9b. Selects only the records that match in both tables
+    SELECT clients.client_id,
+    support_periods.client_id,
+    clients.client_name,
+    support_periods.start_date,
+    support_periods.end_date
+    FROM clients
+    INNER JOIN support_periods ON 
+    clients.client_id = support_periods.client_id
+    WHERE support_periods.start_date >= '2025-01-09'
+    ORDER BY support_periods.start_date;
 
 -- Outer Join example
--- c. Selects all records from both tables, with NULLs where there are no matches
+-- 9c. Selects all records from both tables, with NULLs where there are no matches
 
-SELECT 
-    e.employee_id,
-    e.employee_name,
-    e.employee_email,
-    p.payment_id,
-    p.amount_paid,
-    p.payment_date,
-    p.payment_method
-FROM employees e
-FULL OUTER JOIN payments p
-    ON e.employee_id = p.employee_id
-ORDER BY e.employee_id, p.payment_date;
+    SELECT 
+        e.employee_id,
+        e.employee_name,
+        e.employee_email,
+        p.payment_id,
+        p.amount_paid,
+        p.payment_date,
+        p.payment_method
+    FROM employees e
+    FULL OUTER JOIN payments p
+        ON e.employee_id = p.employee_id
+    ORDER BY e.employee_id, p.payment_date;
 
 -- Left Join example
--- d. All of the records from the left table, and the matched records from the right table
+-- 9d. All of the records from the left table, and the matched records from the right table
 
-SELECT c.client_id,
-       c.client_name,
-       sp.support_period_id,
-       sp.start_date,
-       sp.end_date,
-       e.employee_name,
-       p.program_name
-FROM clients c
-LEFT JOIN support_periods sp ON c.client_id = sp.client_id
-LEFT JOIN employees e ON sp.employee_id = e.employee_id
-LEFT JOIN programs p ON sp.program_id = p.program_id;
+    SELECT c.client_id,
+        c.client_name,
+        sp.support_period_id,
+        sp.start_date,
+        sp.end_date,
+        e.employee_name,
+        p.program_name
+    FROM clients c
+    LEFT JOIN support_periods sp ON c.client_id = sp.client_id
+    LEFT JOIN employees e ON sp.employee_id = e.employee_id
+    LEFT JOIN programs p ON sp.program_id = p.program_id;
 
 -- Right Join example
--- e. All of the records from the right table, and the matched records from the left table
+-- 9e. All of the records from the right table, and the matched records from the left table
 
-SELECT sp.support_period_id,
-       sp.start_date,
-       sp.end_date,
-       c.client_name,
-       e.employee_name,
-       p.program_name
-FROM support_periods sp
-RIGHT JOIN clients c ON sp.client_id = c.client_id
-LEFT JOIN employees e ON sp.employee_id = e.employee_id
-LEFT JOIN programs p ON sp.program_id = p.program_id;
+    SELECT sp.support_period_id,
+        sp.start_date,
+        sp.end_date,
+        c.client_name,
+        e.employee_name,
+        p.program_name
+    FROM support_periods sp
+    RIGHT JOIN clients c ON sp.client_id = c.client_id
+    LEFT JOIN employees e ON sp.employee_id = e.employee_id
+    LEFT JOIN programs p ON sp.program_id = p.program_id;
