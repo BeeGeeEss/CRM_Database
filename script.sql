@@ -152,11 +152,11 @@ CREATE TABLE payments (
 
 -- Insert sample data into Programs table
 INSERT INTO programs (program_name) VALUES
-    ('community_connections'),
-    ('tenants_Advice'),
-    ('advocacy_services'),
-    ('homelessness_services'),
-    ('family_support');
+    ('Community Connections'),
+    ('Tenant Advice'),
+    ('Advocacy Services'),
+    ('Homelessness Services'),
+    ('Family Support');
 
 -- Insert sample data into Employees table
 INSERT INTO employees (employee_name, employee_email, employee_department) VALUES
