@@ -80,7 +80,7 @@ psql -U your_username -d crm_database -f crm_setup.sql
 | **clients**          | CASCADE       | CASCADE       | —                       |
 | **support\_periods** | CASCADE       | CASCADE       | `end_date > start_date` |
 | **financials**       | CASCADE       | CASCADE       | `amount_due >= 0`       |
-| **accounts**         | RESTRICT      | CASCADE       | `bank_balance >= 0`     |
+| **accounts**         | RESTRICT      | CASCADE       | `account_balance >= 0`     |
 | **payments**         | —             | —             | `amount_paid > 0`       |
 
 ## Example Table Schema

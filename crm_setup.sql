@@ -3,10 +3,10 @@
 -- =================================================================
 
 -- Create a new database
--- CREATE DATABASE crm_database;
+    CREATE DATABASE crm_database;
 
 -- Connect to the newly created database (requires a separate psql command or a connection string)
--- \c crm_database;
+    \c crm_database;
 
 
 -- ============================================
@@ -101,6 +101,7 @@ CREATE TABLE financials (
     financial_id SERIAL PRIMARY KEY,
     client_id INT NOT NULL,
     support_period_id INT NOT NULL,
+    financial_type VARCHAR(50) DEFAULT 'Brokerage',
     amount_due DECIMAL(10, 2) NOT NULL CHECK (amount_due >= 0),
     invoice_number VARCHAR(50) NOT NULL,
     invoice_due_date DATE NOT NULL,
@@ -119,7 +120,7 @@ CREATE TABLE reconciliations (
     account_id INT NOT NULL,
     start_date DATE NOT NULL,
     end_date DATE NOT NULL,
-    bank_balance DECIMAL(10, 2) NOT NULL CHECK (bank_balance >= 0),
+    account_balance DECIMAL(10, 2) NOT NULL CHECK (account_balance >= 0),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (employee_id) REFERENCES employees(employee_id) ON DELETE SET NULL ON UPDATE CASCADE,
@@ -192,14 +193,14 @@ INSERT INTO support_periods (program_id, employee_id, client_id, start_date, end
 
 -- Insert sample data into Financials table
 INSERT INTO financials (client_id, support_period_id, amount_due, invoice_number, invoice_due_date) VALUES
-    (1, 1, 1500.00, 'INV1001', '2025-07-01'),
-    (2, 2, 2000.00, 'INV1002', '2025-09-01'),
-    (3, 3, 1750.00, 'INV1003', '2025-10-01'),
-    (4, 4, 2200.00, 'INV1004', '2025-10-20'),
-    (5, 5, 1800.00, 'INV1005', '2025-10-05');
+    (1, 1, 'Brokerage', 1500.00, 'INV1001', '2025-07-01'),
+    (2, 2, 'Brokerage',2000.00, 'INV1002', '2025-09-01'),
+    (3, 3, 'Vouchers', 1750.00, 'INV1003', '2025-10-01'),
+    (4, 4, 'Brokerage', 2200.00, 'INV1004', '2025-10-20'),
+    (5, 5, 'Brokerage', 1800.00, 'INV1005', '2025-10-05');
 
 -- Insert sample data into Reconciliations table
-INSERT INTO reconciliations (employee_id, account_id, start_date, end_date, bank_balance) VALUES
+INSERT INTO reconciliations (employee_id, account_id, start_date, end_date, account_balance) VALUES
     (2, 1, '2025-06-01', '2025-06-30', 5000.00),
     (3, 2, '2025-06-01', '2025-06-30', 7500.00),
     (2, 3, '2025-06-01', '2025-06-30', 6200.00),
@@ -289,8 +290,8 @@ INSERT INTO payments (employee_id, financial_id, account_id, payment_date, amoun
 
 -- 5b. Insert a record with appropriate foreign-key data to the financials table
 -- (Referencing client Holly Rupert)
-    INSERT INTO financials (client_id, support_period_id, amount_due, invoice_number, invoice_due_date) 
-    VALUES (5, 5, 1600.00, 'INV1006', '2025-11-01');
+    INSERT INTO financials (client_id, support_period_id, financial_type, amount_due, invoice_number, invoice_due_date) 
+    VALUES (5, 5, 'Vouchers', 1600.00, 'INV1006', '2025-11-01');
 
 -- Run the next query to delete a record:
 ---------------------------------------------
@@ -314,7 +315,7 @@ INSERT INTO payments (employee_id, financial_id, account_id, payment_date, amoun
     FROM financials;
 
 -- 7c. Calculate the average bank balance from all reconciliations
-    SELECT AVG(bank_balance) AS average_bank_balance
+    SELECT AVG(account_balance) AS average_account_balance
     FROM reconciliations;
 
 -- 7d. Find the minimum amount paid in the payments table
