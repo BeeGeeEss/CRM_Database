@@ -1,110 +1,94 @@
 # 💻📂 Customer Relationship Management (CRM) Database 👨‍👩‍👧‍👦
 
-> This database is required for the use of a Customer Relationship Management system for a not-for-profit organisation. The CRM records Programs, Clients, Support Periods, Financials and the resources required to provide these supports to the community.
+> This project implements a Customer Relationship Management (CRM) database using PostgreSQL.
+It stores and manages data for programs, employees, clients, financials, payments, reconciliations, and accounts.
+
+The database supports:
+
+* Tracking support periods for clients
+* Managing financials and payments
+* Reconciling accounts
+* Generating reports with aggregate and complex queries
 
 ## Prerequisites
 
-- **PostgreSQL** (v14 or later recommended)
-- **Beekeeper Studio** (optional, for GUI database management)
-- Command-line access
-- Basic understanding of SQL
+* **PostgreSQL** (v14 or later recommended)
+* **Beekeeper Studio** (optional, for GUI database management)
+* Command-line access
+* Basic understanding of SQL
 
 ## Database Setup
 
-1. **Create the database**:
+1. **Clone the Project:**
+
+```git
+git clone https://github.com/BeeGeeEss/CRM_Database.git
+cd crm_database
+```
+
+Or download the ZIP folder and extract it
+
+2. **Create the database**:
 
 ```sql
 CREATE DATABASE crm_database;
 ```
 
-2.**Connect to the database**:
+3. **Connect to the database**:
 
 ```sql
 psql -U postgres -d crm_database
 ```
 
-or
+or inside psql
 
 ```sql
-\c
+\c crm_database
 ```
 
-3.**Create the `programs` table**:
+4. **Run the Setup Script:**
 
-![Programs Table](./images/programs.png)
+Run the provided SQL setup file to:
+* Create all tables
+* Add constraints and relationships
+* Load sample data
+* Provide queries for testing
 
 ```SQL
--- Drop the table if it already exists 
-DROP TABLE IF EXISTS programs;  
--- Create the table 
-CREATE TABLE programs (
-    program_id SERIAL PRIMARY KEY,
-    program_name VARCHAR(50) NOT NULL UNIQUE,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-    );
+psql -U your_username -d crm_database -f crm_setup.sql
 ```
 
-_Repeat process for all required tables - consult the script file where required_
+## Entity Relationships
+
+* Programs - Lists the organisations Support Programs
+* Employees - Stores Employee information
+* Clients - Stores Client information
+* Accounts - Tracks payment Accounts
+* Support Periods - Links Clients to Programs & Employees
+* Financials - Stores invoices and billing details
+* Payments - Tracks Payments for Financial records using Account information
+* Reconciliations - Tracks Account Reconciliation by Employees
 
 ![ERD Diagram](/images/erd.png)
 
-4.**Insert Sample Data**:
+## Integrity & Checks
 
-```SQL
-INSERT INTO employees (employee_name, employee_email, employee_department)
-VALUES
-  ('Alice Johnson', 'alice.johnson@example.com', 'Finance'),
-  ('Bob Smith', 'bob.smith@example.com', 'Support Services'),
-  ('Clara Lee', 'clara.lee@example.com', 'Finance');
-```
-
-## Basic Queries
-
-1. **View all Employees records:**
-
-```sql
-SELECT * FROM employees;
-```
-
-```SQL
-SELECT employee_id, employee_name
-FROM employees;
-```
-
-2.**Update a Client Record:**
-
-```SQL
-UPDATE clients
-SET client_dob = '1991-02-08'
-WHERE client_id = '1';
-```
-
-3.**Delete a Program record:**
-
-```SQL
-DELETE FROM programs
-WHERE program_name = 'Family Support';
-```
-
-## Complex Queries
-
-**Using Beekeeper Studio (or your chosen GUI) - You can now run complex queries and view the output**
-
-1. **Example: Data for reporting on a program's client numbers and brokerage expended:**
-
-![Complex Query 1](./images/query23.png)
-
-2.**Example data for reporting on the top 5 accounts by total amount paid, earliest payment date (excluding NULL values)**
-
-![Complex Query 2](./images/query24.png)
+| **Parent Table**     | **On Delete** | **On Update** | **Checks**              |
+| -------------------- | ------------- | ------------- | ----------------------- |
+| **programs**         | CASCADE       | CASCADE       | —                       |
+| **employees**        | SET NULL      | CASCADE       | —                       |
+| **clients**          | CASCADE       | CASCADE       | —                       |
+| **support\_periods** | CASCADE       | CASCADE       | `end_date > start_date` |
+| **financials**       | CASCADE       | CASCADE       | `amount_due >= 0`       |
+| **accounts**         | RESTRICT      | CASCADE       | `bank_balance >= 0`     |
+| **payments**         | —             | —             | `amount_paid > 0`       |
 
 ## Example Table Schema
 
 ---
 
 ```markdown
- ## Payments Table Schema
+ ## Payments Table Schemas
 
 | Column          | Type                     | Nullable | Keys               |
 |-----------------|--------------------------|----------|--------------------|
@@ -120,7 +104,45 @@ WHERE program_name = 'Family Support';
 
 ```
 
-![Payments Table](./images/payments.png)
+## Testing the Database
+
+1. **View all Employees records:**
+
+```sql
+SELECT * FROM employees;
+```
+
+```SQL
+SELECT employee_id, employee_name
+FROM employees;
+```
+
+2. **Update a Client Record:**
+
+```SQL
+UPDATE clients
+SET client_dob = '1991-02-08'
+WHERE client_id = '1';
+```
+
+3. **Delete a Program record:**
+
+```SQL
+DELETE FROM programs
+WHERE program_name = 'Family Support';
+```
+
+## Running Complex Queries
+
+**Using Beekeeper Studio (or your chosen GUI) - You can now run complex queries and view results.**
+
+1. **Example: Data for reporting on a program's client numbers and brokerage expended:**
+
+![Complex Query 1](./images/query23.png)
+
+2. **Example data for reporting on the top 5 accounts by total amount paid, earliest payment date (excluding NULL values)**
+
+![Complex Query 2](./images/query24.png)
 
 ## Troubleshooting
 

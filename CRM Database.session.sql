@@ -42,7 +42,7 @@ CREATE TABLE programs (
 CREATE TABLE employees (
     employee_id SERIAL PRIMARY KEY,
     employee_name VARCHAR(50) NOT NULL,
-    employee_email VARCHAR(100) NOT NULL UNIQUE,
+    employee_email VARCHAR(100) NOT NULL UNIQUE CHECK (employee_email ~* '^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$'),
     employee_department VARCHAR(50) NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
@@ -83,15 +83,15 @@ CREATE TABLE accounts (
 CREATE TABLE support_periods (
     support_period_id SERIAL PRIMARY KEY,
     program_id INT NOT NULL,
-    employee_id INT NOT NULL,
+    employee_id INT NULL,
     client_id INT NOT NULL,
     start_date DATE NOT NULL,
-    end_date DATE,
+    end_date DATE CHECK (end_date > start_date),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (program_id) REFERENCES programs(program_id) ON DELETE CASCADE,
+    FOREIGN KEY (program_id) REFERENCES programs(program_id) ON DELETE CASCADE ON UPDATE CASCADE,
     FOREIGN KEY (employee_id) REFERENCES employees(employee_id) ON DELETE SET NULL ON UPDATE CASCADE,
-    FOREIGN KEY (client_id) REFERENCES clients(client_id) ON DELETE CASCADE
+    FOREIGN KEY (client_id) REFERENCES clients(client_id) ON DELETE CASCADE ON UPDATE CASCADE
     );
 
 -- Financials Table - stores financial details
@@ -101,13 +101,13 @@ CREATE TABLE financials (
     financial_id SERIAL PRIMARY KEY,
     client_id INT NOT NULL,
     support_period_id INT NOT NULL,
-    amount_due DECIMAL(10, 2) NOT NULL,
+    amount_due DECIMAL(10, 2) NOT NULL CHECK (amount_due >= 0),
     invoice_number VARCHAR(50) NOT NULL,
     invoice_due_date DATE NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (client_id) REFERENCES clients(client_id) ON DELETE CASCADE,
-    FOREIGN KEY (support_period_id) REFERENCES support_periods(support_period_id) ON DELETE CASCADE
+    FOREIGN KEY (client_id) REFERENCES clients(client_id) ON DELETE CASCADE ON UPDATE CASCADE,
+    FOREIGN KEY (support_period_id) REFERENCES support_periods(support_period_id) ON DELETE CASCADE ON UPDATE CASCADE
     );
 
 -- Reconciliations Table - stores reconciliation details
@@ -115,15 +115,15 @@ CREATE TABLE financials (
 
 CREATE TABLE reconciliations (
     reconciliation_id SERIAL PRIMARY KEY,
-    employee_id INT NOT NULL,
+    employee_id INT NULL,
     account_id INT NOT NULL,
     start_date DATE NOT NULL,
     end_date DATE NOT NULL,
-    bank_balance DECIMAL(10, 2) NOT NULL,
+    bank_balance DECIMAL(10, 2) NOT NULL CHECK (bank_balance >= 0),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (employee_id) REFERENCES employees(employee_id) ON DELETE SET NULL ON UPDATE CASCADE,
-    FOREIGN KEY (account_id) REFERENCES accounts(account_id) ON DELETE CASCADE ON UPDATE CASCADE
+    FOREIGN KEY (account_id) REFERENCES accounts(account_id) ON DELETE RESTRICT ON UPDATE CASCADE
     );
 
 -- Payments Table - stores payment details
@@ -132,11 +132,11 @@ CREATE TABLE reconciliations (
 
 CREATE TABLE payments (
     payment_id SERIAL PRIMARY KEY,
-    employee_id INT NOT NULL,
+    employee_id INT NULL,
     financial_id INT NOT NULL,
     account_id INT NOT NULL,
     payment_date DATE NOT NULL,
-    amount_paid DECIMAL(10, 2) NOT NULL,
+    amount_paid DECIMAL(10, 2) NOT NULL CHECK (amount_paid > 0),
     payment_method VARCHAR(50) NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -152,17 +152,17 @@ CREATE TABLE payments (
 
 -- Insert sample data into Programs table
 INSERT INTO programs (program_name) VALUES
-    ('community_connections'),
-    ('tenants_Advice'),
-    ('advocacy_services'),
-    ('homelessness_services'),
-    ('family_support');
+    ('Community Connections'),
+    ('Tenant Advice'),
+    ('Advocacy Services'),
+    ('Homelessness Services'),
+    ('Family Support');
 
 -- Insert sample data into Employees table
 INSERT INTO employees (employee_name, employee_email, employee_department) VALUES
     ('Ashley Bunny', 'ashley.bunny@org.au', 'Support Services'),
     ('Nick Hulme', 'nick.hulme@org.au', 'Financial Services'),
-    ('Georgia Arbuckle', 'georgia.arbuckle.org.au', 'Financial Services'),
+    ('Georgia Arbuckle', 'georgia.arbuckle@org.au', 'Financial Services'),
     ('Rachael Green', 'rachael.green@org.au', 'Support Services'),
     ('Monica Zass', 'monica.zass@org.au', 'Support Services');
 
@@ -337,12 +337,14 @@ INSERT INTO payments (employee_id, financial_id, account_id, payment_date, amoun
     FROM programs pr
     LEFT JOIN support_periods sp 
         ON pr.program_id = sp.program_id
+    LEFT JOIN financials f 
+        ON sp.support_period_id = f.support_period_id
     LEFT JOIN payments p 
-        ON sp.support_period_id = p.financial_id
+        ON f.financial_id = p.financial_id
     GROUP BY pr.program_id, pr.program_name
     ORDER BY brokerage_expended DESC, program_id ASC;
 
--- 8b. Provide data for reporting on the top 5 accounts by total amount paid, earliest payment date (excluding NUL values)
+-- 8b. Provide data for reporting on the top 5 accounts by total amount paid, earliest payment date (excluding NULL values)
     SELECT 
         a.account_id,
         a.account_name,

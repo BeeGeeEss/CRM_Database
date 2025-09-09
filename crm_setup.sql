@@ -107,7 +107,7 @@ CREATE TABLE financials (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (client_id) REFERENCES clients(client_id) ON DELETE CASCADE ON UPDATE CASCADE,
-    FOREIGN KEY (support_period_id) REFERENCES support_periods(support_period_id) ON DELETE CASCADE ON UPDATE CASCADE,
+    FOREIGN KEY (support_period_id) REFERENCES support_periods(support_period_id) ON DELETE CASCADE ON UPDATE CASCADE
     );
 
 -- Reconciliations Table - stores reconciliation details
@@ -135,7 +135,7 @@ CREATE TABLE payments (
     employee_id INT NULL,
     financial_id INT NOT NULL,
     account_id INT NOT NULL,
-    payment_date DATE NOT NULL CHECK (payment_date <= CURRENT_DATE),
+    payment_date DATE NOT NULL,
     amount_paid DECIMAL(10, 2) NOT NULL CHECK (amount_paid > 0),
     payment_method VARCHAR(50) NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
