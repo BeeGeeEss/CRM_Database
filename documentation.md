@@ -56,3 +56,29 @@ The organisation is funded to provide multiple programs. State funding requires 
 ![Flow Chart Reconciliations](images/Flow_reconciliations.png)
 
 ## Normalising Data
+
+The data for the CRM database was normalised to Third Normal Form (3NF) before creating the ERD and Flowchart. This process removes redundancies and delivers consistent, structured, and easily queryable data within the database.
+
+#### Unnormalised Data (UNF)
+
+The tables had redundant information and multiple values in the same cell.
+
+![UNF](/images/UNF.png)
+
+#### First Normal Form (1NF)
+
+Repeated or complex values were split up, all values are atomic. I.e. Financial amounts and dates now have their own cells.
+
+![1NF](/images/1NF.png)
+
+#### Second Normal Form (2NF)
+
+Values with partial dependencies were moved to new tables. All non-key attributes depend on the primary key. I.e. One table is divided into Worker, Program, Client, Support Period and Financial.
+
+![2NF](/images/2NF.png)
+
+#### Third Normal Form (3NF)
+
+All transitive dependencies decompose into new tables. Ensuring that each non-key attribute is dependant on the primary key in that table, rather than on other attributes. I.e. Accounts and Reconciliations tables are created. A payment table is created as a future junction table between Financials and Accounts. And the Worker table becomes the Employee table, feeding into Support Periods, Payments and Reconciliations.
+
+![3NF](/images/3NF.png)
