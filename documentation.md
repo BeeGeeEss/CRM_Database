@@ -6,25 +6,53 @@ Student Number: 16183
 
 ## Introduction
 
-> The database is required for the use of a Customer Relationship Management (CRM) system for a not-for-profit organisation.
+> This database is required for the use of a Customer Relationship Management (CRM) system for a not-for-profit organisation.
 
-The organisation is funded to provide multiple programs. This state funding requires reporting of Key Performance Indicators (KPIs), which in the case of these programs is reported per Support Period. Reporting is also required to capture 'Brokerage Expended'.
+The organisation is funded to provide multiple programs. State funding requires reporting of Key Performance Indicators (KPIs), which is reported per Support Period. Reporting on 'Brokerage Expended' is also required.
+
+## Entity Relationship Diagram
+
+> The database consists of 8 tables: Programs, Employees, Clients, Accounts, Support Periods, Financials, Payments, and Reconciliations. Payments acts as a junction table linking Financials and Accounts.
+
+![ERD](/images/erd.png)
+
+## Entity Relationships
+
+| Relationship                 | Type     | Description                                   |
+|-------------------------------|---------|-----------------------------------------------|
+| Programs → Support_Periods    | 1:N     | One program has many support periods          |
+| Clients → Support_Periods     | 1:N     | A client may have multiple support periods    |
+| Clients → Financials          | 1:N     | A client can have many financials             |
+| Employees → Support Periods   | 1:N     | One employee has multiple support periods open|
+| Employees → Reconciliations   | 1:N     | One employee reconciles many account balances |
+| Support Periods → Financials  | 1:N     | One support period captures many financials   |
+| Financials → Payments         | 1:N     | One invoice can be paid by multiple payments  |
+| Accounts → Payments           | 1:N     | One account can process many payments         |
+| Payments                      | Junction| Connects financials and accounts              |
+| Accounts → Reconciliation     | 1:N     | Many accounts can be reconciled in one process|
+
+## Flowchart for Entity Relationships and Attributes
+
+![Full Flowchart](images/ERD_flow1.png)
+
+![Flow Chart Part 1](images/ERD_flow2.png)
+
+![FLow Chart Part 2](images/ERD_flow3.png)
+
+![Flow Chart Clients](images/Flow_clients.png)
+
+![Flow Chart Programs](images/Flow_programs.png)
+
+![Flow Chart Employees](images/Flow_employees.png)
+
+![Flow Chart Support Periods](images/Flow_supportperiods.png)
+
+![Flow Chart Financials](images/Flow_financials.png)
+
+![Flow Chart Payments](images/Flow_payments.png)
+
+![Flow Chart Accounts](images/Flow_accounts.png)
+
+![Flow Chart Reconciliations](images/Flow_reconciliations.png)
 
 ## Normalising Data
-
-## Rules Regarding Relationships
-
-* One client can have many Support Periods
-* There are many Programs, however each Program can only have one Support Period open, per Client, at any given time
-* One Employee can have many open Support Periods across multiple Clients
-* One client can have many Financial entries showing brokerage that has been provided to them
-* One Support Period will show many financials provided, per Client
-* Many Financials will contain the details of many Payments
-* Many Payments are paid using many Accounts
-* Many Employees enter many Payments
-* Many Accounts are reconciled once per Reconciliation
-* One Employee completes many Reconciliations
-
-_Please see below, reflected in the Entity Relationship Diagram (ERD:)_
-
-![ERD](./images/erd.png)
